@@ -1,0 +1,331 @@
+---
+title: "R + Python + SQL"
+author: "Duber Cadrazco"
+date: "21/06/2021"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Librerias
+library(readr)
+library(dplyr)
+library(DataExplorer)
+library(tidyverse)
+library(reticulate)
+library(DBI)
+library(leaflet)
+library(htmltools)
+# declarar la DB SQL en memoria
+db = dbConnect(RSQLite::SQLite(), dbname = "sql.sqlite")
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# inicializar Python
+knitr::knit_engines$set(python = reticulate::eng_python)
+
+# inicializar SQL y la conexión a la BD
+knitr::opts_chunk$set(connection = "db")
+
+```
+
+# Data & Analytics
+
+
+Vamos a utilizar el Dataset "World cities" para explorar los datos con la siguiente hipótesis:
+
+“Dado que el Reino Unido (UK) fue uno de los principales países que colonizaron los Estados Unidos (USA), y UK se encuentra en el lado este de USA, entonces hay más ciudades/poblados con nombres de ciudades de UK en la costa este de USA en comparación a la costa oeste”
+```{r message=FALSE, warning=FALSE}
+datos <- "https://raw.githubusercontent.com/duberc/R-Python-SQL-en-R-Markdown/main/wordlcities.csv"
+datos = read.csv(datos,header = TRUE,sep = ",")
+
+estados <- "https://raw.githubusercontent.com/duberc/R-Python-SQL-en-R-Markdown/main/estadosUS.csv"
+estados = read.csv(estados,header = TRUE,sep = ",")
+```
+
+```{r }
+# revisamos los nombres y tipos de datos
+summary(datos)
+#resumen con estadistica descriptiva
+glimpse(datos)
+glimpse(estados)
+# inspeccion rapida de la data
+introduce(datos)
+introduce(estados)
+# revisamos como esta compuesto el dataset y vemos que no existen N/As
+plot_intro(datos)
+# lo comprobamos
+plot_missing(datos)
+```
+# Python
+```{python warning=FALSE}
+# Pasar de R Dataframe a Python
+df = r.datos
+
+# eliminar NA's
+df = df.dropna()
+
+# eliminar duplicados
+df = df.drop_duplicates()
+```
+# R
+```{r}
+# recuperar dataframe de python y pasarlo a R
+datos = py$df
+
+# comprobamos que eliminamos lo NA's
+plot_missing(datos)
+```
+
+```{r}
+# Pasar un dataframe a BD para lectura SQL
+copy_to(db, datos, overwrite = TRUE)
+```
+
+# SQL
+```{sql}
+-- crear una salida SQL en el reporte para encontrar el nombre de paises segun ciudades de interes
+select distinct Country, City
+from datos where (City like "%Manchester%" or City like "%Texas%")
+and Population > 0
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=7, fig.height=5}
+
+# filtramos US y GB
+us = filter(datos, Country == 'us')
+gb = filter(datos, Country == 'gb')
+
+# generamos Location
+us = merge(us, estados, by = c("Region"))
+
+
+#write.csv(datos, file="datos.csv")
+#write.csv(gb, file="gb.csv")
+```
+
+# R
+```{r}
+# Creamos una columna nueva validando que el nombre de la ciudad en US exista en GB.
+us$Comparar <- as.factor(ifelse(us$City %in% gb$City, 'yes','no'))
+
+
+jus = filter(us, Comparar == 'yes')
+jus
+
+```
+
+```{r}
+# Pasar un dataframe a BD para lectura SQL
+copy_to(db, us,verwrite = TRUE)
+copy_to(db, gb,verwrite = TRUE)
+```
+
+```{r}
+# Listado de tablas en la BD
+dbListTables(db)
+```
+
+```{r}
+# crear un parámetro para filtro en SQL
+pop = 0
+
+# pasar el nombre de una columna como parametro
+filtro <- glue::glue_sql("Region", .con = db)
+
+# crear 2 o mas parámetros para el uso de "IN"
+ciudades <- c("New York", "Los Angeles", "Miami", "Anchorage")
+
+# pasar la variable ciudades a class SQL
+ciudades = glue::glue_sql("{ciudades*}", .con = db)
+
+# Veamos
+ciudades
+```
+
+# SQL
+```{sql}
+-- ejecutar sentencia para usar los 3 parámetros
+select distinct * from us where ?filtro = "FL" and AccentCity in (?ciudades) and Population >?pop  order by Population desc limit 10
+```
+```{sql}
+select * from datos where Country = "es" and AccentCity = "Adeje"
+```
+```{sql}
+-- ejemplo delete
+Delete from datos where Country = "es" and AccentCity = "Adeje"
+```
+
+```{sql}
+-- ejemplo inser into
+insert into datos values ("es","adeje","Adeje","53","22245","28.11984","-16.72558")
+```
+
+```{sql}
+-- validar e insert
+select * from datos where Country = "es" and AccentCity = "Adeje"
+```
+
+```{sql}
+-- buscar todas la ciudades de us que tengan nombres de ciudades de gb
+select distinct * from us where City in (select City from gb) and Population >?pop  order by Population desc
+```
+
+```{sql}
+-- Validar en US si una Ciudad - Region se repite
+select count(*) as cantidad, df1.City, df1.Region, df1.Population, df1.Country
+from us as df1  where df1.city in (select City from gb) and df1.Population >0
+group by df1.City, df1.Region, df1.Population having cantidad>1 order by df1.Population desc 
+```
+
+```{sql}
+-- Ciudades mas importante Costa Este que no tengan nombre exacto en gb
+select Region, City, Population
+from us where City not in (select Distinct City from gb) and Location = 'Costa Este'
+order by Population desc limit 10
+```
+
+```{sql}
+-- Ciudades mas importante Costa Oeste que no tengan nombre exacto en gb
+select Region, City, Population
+from us where City not in (select Distinct City from gb) and Location = 'Costa Oeste'
+order by Population desc limit 10
+```
+```{sql}
+-- Ciudades mas importante de ambas costas que no existen explicitamente en gb
+select City, Population, Location, Comparar
+from us where Comparar ='no' and Location like "Costa%"
+order by Population desc limit 20
+```
+
+```{sql output.var="test"}
+-- Ciudades mas importante de ambas costas que no existen explicitamente en gb
+select City, Population, Location, Comparar
+from us where Comparar = 'no' and Location like "Costa%"
+order by Population desc limit 20
+```
+
+```{r}
+# agregar el df test a la bd
+copy_to(db, test, overwrite = TRUE)
+```
+
+
+```{sql }
+-- validar la tabla
+select * from test
+```
+
+
+```{sql}
+-- hacer un split de las ciudades sin resultados en gb
+select SUBSTRING(City, CHARINDEX(' ', City) + 1, length(City) - CHARINDEX(' ', City)) as City
+from test 
+union
+select SUBSTRING(City, 1, CHARINDEX(' ', City) - 1) as City
+from test
+```
+
+```{sql output.var="test1"}
+-- guardar como table
+select SUBSTRING(City, CHARINDEX(' ', City) + 1, length(City) - CHARINDEX(' ', City)) as City
+from test
+union
+select SUBSTRING(City, 1, CHARINDEX(' ', City) - 1) as City
+from test
+```
+
+
+```{r}
+# agregar df test1 a la tabla
+copy_to(db, test1)
+```
+
+```{sql}
+-- buscar por string en gb para ver coincidencias
+select City,Population from gb where City in (select City from test1) order by Population
+```
+```{sql}
+-- Dado que New York viene de "York" en GB actualizamos el registro
+update us set Comparar = "yes"
+where City = "new york"
+
+```
+```{sql}
+-- validamos
+select * from us
+where City = "new york"
+```
+
+```{sql output.var="final"}
+-- crear una salida SQL como dataframe R usando "output.var"
+SELECT * FROM us where Comparar = "yes" order by Population desc
+```
+# R
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# ver la salida de SQL como dataframe
+final
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+knitr::kable(
+  table(final$Location), 
+  caption = "Tabla US",
+  col.names= c("Lugar","Ctd"))
+```
+
+```{python echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=7, fig.height=5}
+# Liberia
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# cargar variables de R en entorno Python
+#r.us # llamamos el dataframe us
+
+# cargar variables de Python en entorno R
+# py$df llamamos el dataframe df
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Instalar librerias de python en R-reticulate
+#py_install("matplotlib")
+
+```
+# Python
+Ver el df en Python
+```{python}
+# Pasar de R Dataframe a Python
+df = r.final
+df
+```
+describe() nos permite conocer datos generales del dataframe
+```{python}
+# describe() nos permite conocer datos generales del dataframe
+print(df.describe())
+
+```
+
+Ejemplo de grafico en Python
+```{python}
+x = np.arange(1, 11)
+y = np.random.randint(10, size=10)
+plt.plot(x, y)
+plt.show()
+```
+# R
+
+```{r}
+summary(py$df)
+```
+# Ver las ciudades en un mapa
+```{r message=FALSE, warning=FALSE}
+us %>%
+  filter(Comparar=="yes") %>%
+  select(AccentCity,Latitude, Longitude) %>%
+  leaflet( width = 900) %>%
+  addTiles()%>%
+  addMarkers(clusterOptions = markerClusterOptions(),popup = ~htmlEscape(AccentCity))
+```

@@ -1,0 +1,54 @@
+solving data analysis, data science, and machine learning problems
+
+Equipped with a huge amount of well-documented data science packages (more than 18,000, as of July 2022)
+
+Compatible with many operating systems
+
+Supported by an excellent online community.
+
+Performing data analysis is the first step of any data science project. It's logical: before diving into predicting future scenarios using machine learning and deep learning techniques, we have to reveal the current (and past) state of things.4
+https://www.datacamp.com/blog/r-project-ideas
+
+La aplicación R-Studio se abre con una pantalla de 4 paneles. El panel inferior izquierdo es una consola para escribir comandos R directamente o ver el resultado de los comandos R ejecutados. El panel inferior derecho tiene pestañas [Archivos|Gráficas|Paquetes|Ayuda].
+En el panel inferior derecho, seleccione la pestaña Archivos y abra uno de los archivos R Script, por ejemplo, para el Proyecto 1, seleccione el archivo "Rproject1_script1.r" haciendo clic en el nombre del archivo. El archivo se abrirá en una nueva pestaña en el panel superior izquierdo. 
+
+dashboards with siny
+https://epirhandbook.com/en/r-projects.html
+
+Guia breve de R
+http://rafalab.dfci.harvard.edu/dslibro/getting-started.html#la-consola-r
+
+Shiny y Rconect
+https://www.rstudio.com/blog/10-ways-rstudio-connect/
+
+esto es todo lo que puede hacer R
+https://la.mathworks.com/products/matlab.html
+
+campos vectoriales y todas las graficas con Rstudio
+https://r-graphics.org/recipe-miscgraph-3d-scatter
+
+
+
+
+
+
+
+
+
+
+
+
+Consultando directmanete de la pagina oficial de R nos da la introducción: "R es un lenguaje y entorno disponible gratuitamente para computación y gráficos estadísticos que proporciona una amplia variedad de técnicas estadísticas y gráficas: modelado lineal y no lineal, pruebas estadísticas, análisis de series temporales, clasificación, agrupamiento, etc.
+
+ya ha consultado la página de inicio del proyecto R para obtener más información.
+
+CRAN es una red de servidores ftp y web en todo el mundo que almacenan versiones idénticas y actualizadas de código y documentación para R. Utilice el espejo CRAN más cercano para minimizar la carga de la red.
+
+Envío a CRAN
+Para "enviar" un paquete a CRAN, verifique que su envío cumpla con la Política de depósito de CRAN y luego use el formulario web.
+Si esto falla, envíe un correo electrónico a CRAN-submissions@R-project.org siguiendo la política. No adjunte envíos a los correos electrónicos, ya que esto abarrotará los buzones de media docena de personas.
+
+Tenga en cuenta que, por lo general, no aceptamos envíos de binarios precompilados por motivos de seguridad. Toda la distribución binaria enumerada anteriormente está compilada por mantenedores seleccionados, que están a cargo de todos los binarios de su plataforma, respectivamente.
+
+
+
