@@ -42,7 +42,7 @@ KEY_ID VARCHAR(20),
 PRIMARY KEY (KEY_ID));
 
 SELECT * FROM SB_t_contabilidad_clientes
-sbecosistemaanaliticolago_SB_t_contabilidad_clientes
+
 INSERT INTO SB_t_contabilidad_clientes (NOMBRE_CLIENTE ,
 SEXO,
 FECHA_NACIMIENTO,
