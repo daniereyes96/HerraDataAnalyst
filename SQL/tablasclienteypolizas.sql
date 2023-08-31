@@ -1,4 +1,4 @@
-CREATE TABLE sbecosistemaanaliticolago_SB_t_polizas_riesgos_endosos (
+CREATE TABLE SB_t_polizas_riesgos_endosos (
 CODIGO_RAMO_CONTABLE VARCHAR(10),
 CODIGO_PRODUCTO VARCHAR(10),
 NUMERO_POLIZA VARCHAR(10),
@@ -10,7 +10,7 @@ FECHA_INICIO_POLIZA DATE,
 FECHA_FIN_POLIZA DATE,
 PRIMARY KEY (KEY_ID_ASEGURADO));
 
-INSERT INTO sbecosistemaanaliticolago_SB_t_polizas_riesgos_endosos (CODIGO_RAMO_CONTABLE,CODIGO_PRODUCTO,
+INSERT INTO SB_t_polizas_riesgos_endosos (CODIGO_RAMO_CONTABLE,CODIGO_PRODUCTO,
 NUMERO_POLIZA,
 KEY_ID_ASEGURADO,
 NOMBRE_POLIZA,
@@ -30,10 +30,10 @@ VALUES (20,758,121355,'A32B','Bienestar',1800000,1290000,'2022-05-30','2022-07-3
 (26,758,125318,'A11B','Bienestar',1300000,1240000,'2022-05-30','2022-07-30'),
 (24,500,124319,'A14B','Bienestar',1450000,1256000,'2022-05-30','2022-07-30');
 
-SELECT * FROM sbecosistemaanaliticolago_SB_t_polizas_riesgos_endosos
+SELECT * FROM SB_t_polizas_riesgos_endosos
 
 --SEGUNDA TABLA CLIENTES
-CREATE TABLE sbecosistemaanaliticolago_SB_t_contabilidad_clientes (
+CREATE TABLE SB_t_contabilidad_clientes (
 NOMBRE_CLIENTE VARCHAR(30),
 SEXO VARCHAR(10),
 FECHA_NACIMIENTO DATE,
@@ -41,9 +41,9 @@ MUNICIPIO VARCHAR(50),
 KEY_ID VARCHAR(20),
 PRIMARY KEY (KEY_ID));
 
-SELECT * FROM sbecosistemaanaliticolago_SB_t_contabilidad_clientes
-
-INSERT INTO sbecosistemaanaliticolago_SB_t_contabilidad_clientes (NOMBRE_CLIENTE ,
+SELECT * FROM SB_t_contabilidad_clientes
+sbecosistemaanaliticolago_SB_t_contabilidad_clientes
+INSERT INTO SB_t_contabilidad_clientes (NOMBRE_CLIENTE ,
 SEXO,
 FECHA_NACIMIENTO,
 MUNICIPIO,
@@ -63,4 +63,4 @@ VALUES ('DANIEL ROA','MASCULINO','1989-12-30','Bogotá','A32B'),
 ('RAUL DUARTE','MASCULINO','1995-07-15','Bogotá','A30B'),
 ('MARIO ROA','MASCULINO','1987-11-01','Bogotá','A79B');
 
-SELECT * FROM sbecosistemaanaliticolago_SB_t_contabilidad_clientes
+SELECT * FROM SB_t_contabilidad_clientes
