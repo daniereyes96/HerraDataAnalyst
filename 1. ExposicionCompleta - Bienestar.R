@@ -17,7 +17,7 @@ MES <- ifelse(M==6,"JUNIO",MES)
 MES <- ifelse(M==9,"SEPTIEMBRE",MES)
 MES <- ifelse(M==12,"DICIEMBRE",MES)
 
-A O <- year(FECHA_CORTE)
+AÑO <- year(FECHA_CORTE)
 
 # Definir ruta de trabajo
 setwd("C:\\Users\\1020817169\\Desktop\\POWERCAT\\Informacion GCP\\Bienestar")
@@ -89,7 +89,7 @@ BN_2$ETARIO_3 <- as.character(BN_2$ETARIO_3)
 BN_2$MES <- MES
 
 # Añadir año
-BN_2$A O <- A O
+BN_2$AÑO <- AÑO
 
 # Posibles errores Municipio
 BN_2 <- BN_2 %>% mutate(MUNICIPIO=replace(MUNICIPIO, MUNICIPIO=="BOGOTA, D.C.", "BOGOTA D.C"),
