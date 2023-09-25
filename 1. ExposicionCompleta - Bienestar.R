@@ -17,6 +17,9 @@ MES <- ifelse(M==12,"DICIEMBRE",MES)
 AÑO <- year(FECHA_CORTE)
 setwd("C:\\Users\\danie\\Desktop\\Monografia1")
 
+#### ---- 1. Rutina Bienestar ---- ######## ---- 1. Rutina Bienestar ---- ######## 
+
+#carga base formato CSV con read_csv() la asigna a BN. paste() junta texto.p variable
 BN <-  read_csv(paste("Bienestar_",p,".csv",sep=""),col_names = FALSE)
 
 names(BN) <- c("NUMERO_POLIZA","KEY_ID_ASEGURADO","CODIGO_RAMO_CONTABLE",
@@ -30,13 +33,14 @@ names(BN_2)[c(5:6)]<-c("VALOR_ASEGURADO","VALOR_CEDIDO")
 
 BN_2$CODIGO_COMPANIA <- 0
 
+#CREAR UN DATAFRAME DE DOS REGISTROS PARA UNIR AL DATA FRAME ORIGINAL "BN_2"
 nuevas.filas=data.frame(CODIGO_RAMO_CONTABLE=c(24,25), KEY_ID_ASEGURADO=c("A99B","A98B"),
                         NUMERO_POLIZA=c(156322,167541), CODIGO_PRODUCTO=c(716,736),
                         VALOR_ASEGURADO=c(168000.596,178000.860), 
                         VALOR_CEDIDO=c(258000.73,10000.145),SEXO=c("NO INFO","NA"), 
                         FECHA_NACIMIENTO=c(as.Date("1975-09-12"), as.Date("1979-03-15")),
                         MUNICIPIO=c("Bogotá","Bogotá"), CODIGO_COMPANIA=c(0,0))
-
+#apila bases de igual naturaliza una debajo de otra
 BN_2 <- rbind(BN_2,nuevas.filas)
 
 BN_2$VALOR_ASEGURADO <- round(BN_2$VALOR_ASEGURADO,0)
