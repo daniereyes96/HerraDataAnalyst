@@ -5,17 +5,12 @@ library(writexl)
 library(lubridate)
 library(tidyr)
 
-# Remover notación cientifica
-options(scipen=999)
-
-# Tiempo de ejecucion
-s <- Sys.time()
-
 # Fecha corte
 p <- "2022-06"
-
+# as.Date extrae la fecha de un texto
 FECHA_CORTE <- as.Date("2022-06-30")
 
+# Variables de tiempo
 M <- month(FECHA_CORTE)
 MES <- ifelse(M==3,"MARZO",M)
 MES <- ifelse(M==6,"JUNIO",MES)
@@ -130,8 +125,6 @@ setwd("C:\\Users\\1020817169\\Desktop\\POWERCAT\\Informacion Procesada\\Exposici
 # Expotar archivo Bienestar
 fwrite(BN_2,paste("EXPUESTOS_BIENESTAR-",p,".csv",sep=""),dec=".")
 
-# Tiempo
-s2 <-Sys.time()
  
 s2-s
 
