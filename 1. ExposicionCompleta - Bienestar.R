@@ -65,5 +65,35 @@ BN_2 <- BN_2 %>% mutate(SEXO=replace(SEXO, SEXO=="FEMENINO", "F"),
 BN_2$FECHA_NACIMIENTO <- as.Date(BN_2$FECHA_NACIMIENTO)
 BN_2$FECHA_CORTE <- as.Date(FECHA_CORTE)
 
-BN_2$EDAD <- round(as.numeric(trunc((BN_2$
+BN_2$EDAD <- round(as.numeric(trunc((BN_2$FECHA_CORTE-BN_2$FECHA_NACIMIENTO)/365)))
 
+BN_2$EDAD <- ifelse(BN_2$EDAD<0,NA,BN_2$EDAD)
+
+BN_2$ETARIO_1 <- cut(BN_2$EDAD, breaks=seq(from=0,to=100,by=5),right = F)
+BN_2$ETARIO_1 <- as.character(BN_2$ETARIO_1)
+
+BN_2$ETARIO_2 <- cut(BN_2$EDAD, breaks=seq(from=0,to=100,by=10),right = F)
+BN_2$ETARIO_2 <- as.character(BN_2$ETARIO_2)
+
+BN_2$ETARIO_3 <- cut(BN_2$EDAD, breaks=seq(from=0,to=100,by=20),right = F)
+BN_2$ETARIO_3 <- as.character(BN_2$ETARIO_3)
+
+BN_2$MES <- MES
+BN_2$AÑO <- AÑO
+
+BN_2 <- BN_2 %>% mutate(MUNICIPIO=replace(MUNICIPIO,MUNICIPIO=="Bogotá","BOGOTA D.C"),
+                        MUNICIPIO=replace(MUNICIPIO,MUNICIPIO=="BOGOTA","BOGOTA D.C"))%>% 
+  as.data.frame()
+
+BN_2 <- BN_2 %>% replace_na(list(SEXO="ND",MUNICIPIO="ND",DEPARTAMENTO="ND",ETARIO_1="ND",
+                                 ETARIO_2="ND",ETARIO_3="ND"))
+
+sapply(BN_2, function(x) sum(is.na(x)))
+
+BN_2 <- BN_2 %>% filter(CODIGO_PRODUCTO != 716) 
+
+setwd("C:\\Users\\danie\\Desktop\\Monografia1")
+
+fwrite(BN_2,paste("EXPUESTOS_BIENESTAR-",p,".csv",sep=""),dec=".")
+
+rm(list=ls())
