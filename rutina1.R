@@ -1,138 +1,121 @@
+#librerÃ­as para el anÃ¡lisis de datos
 library(readr)
 library(dplyr)
-library(data.table)
-library(writexl)
-library(lubridate)
 library(tidyr)
+library(data.table)
+library(readxl)
+library(sqldf)
 
-# Remover notación cientifica
-options(scipen=999)
-
-# Tiempo de ejecucion
-s <- Sys.time()
-
-# Fecha corte
+#Variables
 p <- "2022-06"
-
+#convierte una cadena de texto en formato fecha 
 FECHA_CORTE <- as.Date("2022-06-30")
-
+#extrae el mes y lo asigna a "M"
 M <- month(FECHA_CORTE)
-MES <- ifelse(M==3,"MARZO",M)
-MES <- ifelse(M==6,"JUNIO",MES)
-MES <- ifelse(M==9,"SEPTIEMBRE",MES)
-MES <- ifelse(M==12,"DICIEMBRE",MES)
 
-AÑO <- year(FECHA_CORTE)
+#definir un vector con los nombres de los meses
+nombres_meses <- c("ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO","JULIO",
+                   "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE")
 
-# Definir ruta de trabajo
-setwd("C:'\\Users\\danie\\Desktop\\MONOGRAFIA")
+#obtener el nombre del mes en espaÃ±ol
+MES <- nombres_meses[M]
+#year() extrae el aÃ±o de la variable "FECHA_CORTE"
+AÃ‘O <- year(FECHA_CORTE)
 
-#### ---- 1. Bienestar ---- ####
+#establece la ruta donde se importaran y exportaran las bases
+setwd("C:\\Users\\danie\\Desktop\\Monografia1")
 
-# Recipe inputs
-BN <-  read_csv(paste("Bienestar_",p,".csv",sep=""),col_names = T, )
+####---- 1. Inicio Rutina Bienestar ----#######---- 1. Inicio Rutina Bienestar ----#######
 
-names(BN) <- c("NUMERO_POLIZA","KEY_ID_ASEGURADO","CODIGO_RAMO_CONTABLE11","CODIGO_PRODUCTO",
-               "VT","VC","ACTIVO","SEXO","FECHA_NACIMIENTO","MUNICIPIO")
+#carga base formato CSV con read_csv() la asigna a BN. paste() junta texto.p variable
+BN <-  read_csv(paste("Bienestar_",p,".csv",sep=""),
+                col_names = FALSE, show_col_types = FALSE )
 
-BN_2 <- BN[names(BN)[c(1,2,13,14,15,12,3,4,5,7:10,16:20,6,11)]]
-BN_2 <- BN_2 %>% select(-NE,-ACTIVO)
+#asigna nombres a las columnas de "BN" con un vector de nombres
+names(BN) <- c("NUMERO_POLIZA","KEY_ID_ASEGURADO","CODIGO_RAMO_CONTABLE",
+               "CODIGO_PRODUCTO","VT","VC","ACTIVO","SEXO","FECHA_NACIMIENTO","MUNICIPIO")
+#re ordena las columnas
+BN_2 <- BN[names(BN)[c(3,2,1,4,5,6,7,8:10)]]
 
-# Modificar nombres variables
-names(BN_2)[c(10:13)]<-c("VALOR_ASEGURADO","VALOR_CEDIDO","VALOR_RETENIDO","VALOR_FACULTATIVO")
+#eliminar columna "ACTIVO"
+BN_2 <- BN_2 %>% select(-ACTIVO)
+#modificar nombres de las columnas 5 y 6
+names(BN_2)[c(5:6)]<-c("VALOR_ASEGURADO","VALOR_CEDIDO")
 
-# Ajustar Codigo_Compania
-BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==18 & BN_2$CODIGO_PRODUCTO==754,2,BN_2$CODIGO_COMPANIA)
-BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==24 & BN_2$CODIGO_PRODUCTO==500,3,BN_2$CODIGO_COMPANIA)
-BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==45 & BN_2$CODIGO_PRODUCTO==30,2,BN_2$CODIGO_COMPANIA)
+#se crea la columna "CODIGO_COMPANIA" con valor de ceros
+BN_2$CODIGO_COMPANIA <- 0
 
-# Ajustar valor asegurado
+#redondea los valores de ciertas columnas a cero decimales
 BN_2$VALOR_ASEGURADO <- round(BN_2$VALOR_ASEGURADO,0)
-
-# Ajustar variable VA_CEDIDO (Valor asegurado cedido)
 BN_2$VALOR_CEDIDO <- round(BN_2$VALOR_CEDIDO,0)
 
-# Ajustar variable VA_RETENIDO (Valor asegurado retenido)
-BN_2$VALOR_RETENIDO <- round(BN_2$VALOR_RETENIDO,0)
-
-# Ajustar variable VA_FACULTATIVO (Valor asegurado facultativo)
-BN_2$VALOR_FACULTATIVO <- round(BN_2$VALOR_FACULTATIVO,0)
-
-# Agregar Linea de negocio
+#se crea la columna "LN" (lÃ­nea de negocio) todos sus registros son "Bienestar".
 BN_2$LN <-'Bienestar'
 
-# Ajustar posibles errores Sexo
+BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==20 &
+                                 BN_2$CODIGO_PRODUCTO==764,2,BN_2$CODIGO_COMPANIA)
+BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==25 &
+                                 BN_2$CODIGO_PRODUCTO==737,3,BN_2$CODIGO_COMPANIA)
+BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==20 & 
+                                 BN_2$CODIGO_PRODUCTO==712,3,BN_2$CODIGO_COMPANIA)
+BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==20 &
+                                 BN_2$CODIGO_PRODUCTO==758,3,BN_2$CODIGO_COMPANIA)
+#ifelse: SI "COD_RAMO_CONTABLE"=24, 26, 18  entonces asignar "CODIGO_COMPANIA"=2 o 3
+BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==24,2,BN_2$CODIGO_COMPANIA)
+BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==26,3,BN_2$CODIGO_COMPANIA)
+BN_2$CODIGO_COMPANIA <- ifelse(BN_2$CODIGO_RAMO_CONTABLE==18,3,BN_2$CODIGO_COMPANIA)
+
+#funciÃ³n mutate() anidada, remplaza registros "NO INFO" por carÃ¡cter NA. 
 BN_2 <- mutate(BN_2,SEXO=ifelse(SEXO=="NO INFO",NA,as.character(SEXO)))
+
+#funciÃ³n mutate() anidada con comando %>% remplaza "FEMENINO" por "F", "MASCULINO" por "M"
 BN_2 <- BN_2 %>% mutate(SEXO=replace(SEXO, SEXO=="FEMENINO", "F"),
-                        SEXO=replace(SEXO, SEXO=="MASCULINO", "M")) %>%
-  as.data.frame()
+                        SEXO=replace(SEXO, SEXO=="MASCULINO", "M")) %>% as.data.frame()
 
-# Ajustar fecha de nacimiento 
+#as.Date() ajusta "FECHA_NACIMIENTO" como dato tipo Date
 BN_2$FECHA_NACIMIENTO <- as.Date(BN_2$FECHA_NACIMIENTO)
+BN_2$FECHA_CORTE <- as.Date(FECHA_CORTE)   #Se crea columna de tipo fecha FECHA_CORTE 
 
-# Ajustar fecha de corte
-BN_2$FECHA_CORTE <- as.Date(FECHA_CORTE)
-
-# Ajustar variable Edad
 BN_2$EDAD <- round(as.numeric(trunc((BN_2$FECHA_CORTE-BN_2$FECHA_NACIMIENTO)/365)))
+
+#si registro EDAD es negativo remplazar por NA
 BN_2$EDAD <- ifelse(BN_2$EDAD<0,NA,BN_2$EDAD)
 
-# Segmentar la variable EDAD por grupos de 5 años
+#segmentar la variable EDAD por grupos de 5 aÃ±os
 BN_2$ETARIO_1 <- cut(BN_2$EDAD, breaks=seq(from=0,to=100,by=5),right = F)
 BN_2$ETARIO_1 <- as.character(BN_2$ETARIO_1)
-
-# Segmentar la variable EDAD por grupos de 10 años
+#segmentar la variable EDAD por grupos de 10 aÃ±os
 BN_2$ETARIO_2 <- cut(BN_2$EDAD, breaks=seq(from=0,to=100,by=10),right = F)
 BN_2$ETARIO_2 <- as.character(BN_2$ETARIO_2)
-
-# Segmentar la variable EDAD por grupos de 20 años
+#segmentar la variable EDAD por grupos de 20 aÃ±os
 BN_2$ETARIO_3 <- cut(BN_2$EDAD, breaks=seq(from=0,to=100,by=20),right = F)
 BN_2$ETARIO_3 <- as.character(BN_2$ETARIO_3)
-
-# Añadir mes
+#aÃ±adir columna MES con valor MES al principio de la rutina
 BN_2$MES <- MES
+#aÃ±adir columna AÃ‘O con valor AÃ‘O al principio de la rutina
+BN_2$AÃ‘O <- AÃ‘O
 
-# Añadir año
-BN_2$AÑO <- AÑO
-
-# Posibles errores Municipio
-BN_2 <- BN_2 %>% mutate(MUNICIPIO=replace(MUNICIPIO, MUNICIPIO=="Bogotá", "BOGOTA D.C"),
-                        MUNICIPIO=replace(MUNICIPIO, MUNICIPIO=="BOGOTA", "BOGOTA D.C")) %>%
+BN_2 <- BN_2 %>% mutate(MUNICIPIO=replace(MUNICIPIO,MUNICIPIO=="BogotÃ¡","BOGOTA D.C"),
+                        MUNICIPIO=replace(MUNICIPIO,MUNICIPIO=="BOGOTA","BOGOTA D.C"))%>% 
   as.data.frame()
 
-# Posibles errores Departamento 
-BN_2 <- BN_2 %>% mutate(DEPARTAMENTO=replace(DEPARTAMENTO, DEPARTAMENTO=="BOGOTA, D.C.", "BOGOTA D.C"),
-                        DEPARTAMENTO=replace(DEPARTAMENTO, DEPARTAMENTO=="ARCHIPIELAGO DE SAN ANDRES, PROVIDENCIA Y SANTA CATALINA",
-                                             "SAN ANDRES Y PROVIDENCIA"),
-                        DEPARTAMENTO=replace(DEPARTAMENTO,DEPARTAMENTO=="VACIO",NA)) %>%
-  as.data.frame()
-
-BN_2 <- BN_2 %>% mutate(DEPARTAMENTO=replace(DEPARTAMENTO,MUNICIPIO=="BOGOTA D.C","BOGOTA D.C")) %>%
-  as.data.frame()
-
-# Reemplazar valores faltantes
+#remplazan los valores NA para diferentes columnas, con el texto ND
 BN_2 <- BN_2 %>% replace_na(list(SEXO="ND",MUNICIPIO="ND",DEPARTAMENTO="ND",ETARIO_1="ND",
                                  ETARIO_2="ND",ETARIO_3="ND"))
 
-# Valores faltantes
+#contador de valores faltantes en todo BN_2
 sapply(BN_2, function(x) sum(is.na(x)))
 
-# Eliminar información Producto 756 (Es de Bancaseguros)
-BN_2 <- BN_2 %>% filter(CODIGO_PRODUCTO != 756)
+#eliminar las filas donde "CODIGO_PRODUCTO" = 716
+BN_2 <- BN_2 %>% filter(CODIGO_PRODUCTO != 716) 
+#se llaman dos registros de la base "BN_2" como vista previa antes de exportar
+head(BN_2, n=2)
 
+#definir ruta de exportaciÃ³n de la base resultante "BN_2"
+setwd("C:\\Users\\danie\\Desktop")
 
-#### ---- 2. Exportar exposicón completa ---- ####
-
-# Definir ruta de exportación
-setwd("C:\\Users\\1020817169\\Desktop\\POWERCAT\\Informacion Procesada\\Exposicion Completa\\Bienestar")
-
-# Expotar archivo Bienestar
+#exportar base "BN_2" formato CSV con el nombre "EXPUESTOS_BIENESTAR-" 
 fwrite(BN_2,paste("EXPUESTOS_BIENESTAR-",p,".csv",sep=""),dec=".")
 
-# Tiempo
-s2 <-Sys.time()
-
-s2-s
-
-# Limpiar ambiente
+#elimina objetos almacenados
 rm(list=ls())
