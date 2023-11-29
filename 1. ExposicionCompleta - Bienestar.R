@@ -6,6 +6,7 @@ library(data.table)
 library(readxl)
 library(sqldf)
 
+
 # Definición de la variable 'p' con el periodo deseado
 p <- "2022-06"
 
